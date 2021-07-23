@@ -11,9 +11,8 @@ This repository contains data and code for a counterfactual evaluation of Transf
 
 ### Creating counterfactual evaluation datasets
 
-•
-•
-•
+*
+*
 
 
 
