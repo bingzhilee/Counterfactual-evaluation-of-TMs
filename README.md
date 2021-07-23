@@ -3,7 +3,7 @@ This repository contains data and code for a counterfactual evaluation of Transf
 
 ### Creating object past-participle agreement datasets
 
-`data/treebanks` contains ud treebank(103 sentences  and [Gutenberg](https://gitlab.huma-num.fr/bli/syntactic-ability-nlm/-/blob/master/data/treebank/French/gutenberg-treebank.conllu) treebank.
+`data/treebanks` contains ud treebank(102 sentences)  and [Gutenberg](https://gitlab.huma-num.fr/bli/syntactic-ability-nlm/-/blob/master/data/treebank/French/gutenberg-treebank.conllu) treebank.
 
 `data/agreement`contains sentences used in agreement task, the basic features and the prediction of the pretrained Transformer model(the best perplexity score: 28.2)
 
