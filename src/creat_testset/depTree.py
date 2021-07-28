@@ -6,6 +6,7 @@ Classes Node, Arc, DependencyTree providing functionality for syntactic dependen
 
 """
 import sys
+import re
 from queue import Queue
 import timeit
 
@@ -104,9 +105,12 @@ class Arc(object):
 
 
 class DependencyTree(object):
-    def __init__(self, nodes, arcs):
+    def __init__(self, nodes, arcs,fused_nodes):
         self.nodes = nodes
         self.arcs = arcs
+        self.assign_sizes_to_nodes()
+        # for UD annotation to be able to recover original sentence (without split morphemes e.g. aux --> à les)
+        self.fused_nodes = fused_nodes
 
     def __str__(self):
         return "\n".join([str(n) for n in self.nodes])
@@ -122,6 +126,26 @@ class DependencyTree(object):
                 children.append(arc.child)
         return children
 
+    def assign_sizes_to_nodes(self):
+        for node in self.nodes:
+            node.size = len(self.children(node)) + 1
+
+    def remove_node(self, node_x):
+        assert len(self.children(node_x)) == 0
+        self.nodes.remove(node_x)
+        for node in self.nodes:
+            if node.head_id > node_x.index:
+                node.head_id = node.head_id - 1
+            if node.index > node_x.index:
+                node.index = node.index - 1
+
+        for i in range(len(self.fused_nodes)):
+            start, end, token = self.fused_nodes[i]
+            if start > node_x.index:
+                start = start - 1
+            if end > node_x.index:
+                end = end - 1
+            self.fused_nodes[i] = (start, end, token)
     def subtree(self, head):
         """
         ex: The thing to keep in mind is that...
@@ -137,7 +161,8 @@ class DependencyTree(object):
         elements.add(head)
         visited = set()
         while not queue.empty():
-            next_node = queue.get()#Remove and return an item from the queue. If queue is empty, wait until an item is available
+            # Remove and return an item from the queue. If queue is empty, wait until an item is available
+            next_node = queue.get()
             if next_node in visited:
                 continue
             visited.add(next_node)
@@ -174,6 +199,31 @@ class DependencyTree(object):
     def root(self):
         return DependencyTree.generic_root()
 
+    def remerge_segmented_morphemes(self):
+        """
+        UD format only: Remove segmented words and morphemes and substitute them by the original word form
+        - all children of the segments are attached to the merged word form
+        - word form features are assigned heuristically (should work for Italian, not sure about other languages)
+            - pos tag and morphology (zero?) comes from the first morpheme
+
+        """
+        for start, end, token in self.fused_nodes:
+            # assert start + 1 == end, t
+            self.nodes[start - 1].word = token
+
+            for i in range(end - start):
+                # print(i)
+                if len(self.children(self.nodes[start])) != 0:
+                    for c in self.children(self.nodes[start]):
+                        c.head_id = self.nodes[start - 1].index
+                        self.arcs.remove(Arc(child=c, head=self.nodes[start], direction=c.dir))
+                        self.arcs.append(Arc(child=c, head=self.nodes[start - 1], direction=c.dir))
+                assert len(self.children(self.nodes[start])) == 0, (self, start, end, token, i, self.arcs)
+                self.remove_node(self.nodes[start])
+                # print(t)
+                #        print(t)
+        self.fused_nodes = []
+
     @classmethod
     def generic_root(cls):
         return Node(0, "ROOT", "ROOT", 0, "ROOT", size=0)
@@ -181,8 +231,15 @@ class DependencyTree(object):
     @classmethod
     def from_sentence(cls, sentence):
         nodes = []
+        fused_nodes = []
         for i in range(len(sentence)):
             row = sentence[i]
+            # saving original word segments separated in UD (e.g. French aux -> à + les )
+            if re.match(r"[0-9]+-[0-9]+", row[0]):  # match 1 or more of [0-9] index:"35-36 one's"
+                fused_nodes.append((int(row[0].split("-")[0]), int(row[0].split("-")[1]), row[1]))  # (35,36,"one's")
+                continue
+
+
             morph = row[5]
             lemma = row[2]
             nodes.append(
@@ -205,7 +262,7 @@ class DependencyTree(object):
             else:
                 arcs.append(Arc(head_element, Arc.LEFT, node))
                 node.dir = Arc.LEFT
-        return cls(nodes, arcs)
+        return cls(nodes, arcs, fused_nodes)
 
     def __str__(self):
         """
@@ -283,9 +340,11 @@ def load_trees_from_conll(file_name):
     return trees
 
 if __name__ == '__main__':
-    
+    start = timeit.default_timer()
     trees = load_trees_from_conll(file_name)
     print(len(trees))
     #for s in trees:
     #    print(s)
 
+    stop = timeit.default_timer()
+    print('Time: ', stop - start)

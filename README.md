@@ -1,20 +1,18 @@
-# Syntactic ability of neural language models
-This repository contains data and code for a reproduction of the experiments of EMNLP2021-submission (Li, Wisnewski and Crabbé).
+# Assess syntactic ability of Transformer LM via counterfactual evaluation
+This repository contains data and code for a counterfactual evaluation of Transformer LM on French object past participle agreement
 
-#### Creating evaluation datasets
+### Creating object past-participle agreement datasets
 
-`data/treebank` contains conllu format treebanks 
+`data/treebanks` contains ud treebank(102 sentences)  and [Gutenberg](https://gitlab.huma-num.fr/bli/syntactic-ability-nlm/-/blob/master/data/treebank/French/gutenberg-treebank.conllu) treebank.
 
-`data/agreement`contains sentences of agreement test set used in the experiments
+`data/agreement`contains sentences used in agreement task, the basic features and the prediction of the pretrained Transformer model(the best one with perplexity 28.2)
+
+`src/creat_testset` contains the scripts used to extract valid sentences and basic features from `*.conllu` file
+
+### Creating counterfactual evaluation datasets
+
+*
+*
 
 
-### Training data based on Wikipedia
-
-Each corpus consists of around 100M tokens, we used training (80M) and validation (10M) subsets in our experiments. All corpora were shuffled at sentence level.
-
-Each vocabulary lists words according to their indices starting from 0, `<unk>`,`<bos>` and `<eos>` tokens are already in the vocabulary. 
-
-- French [train]() / [valid]() / [test]() / [vocab]()
-
-- English [train](https://dl.fbaipublicfiles.com/colorless-green-rnns/training-data/English/train.txt) / [valid](https://dl.fbaipublicfiles.com/colorless-green-rnns/training-data/English/valid.txt) / [test](https://dl.fbaipublicfiles.com/colorless-green-rnns/training-data/English/test.txt) / [vocab](https://dl.fbaipublicfiles.com/colorless-green-rnns/training-data/English/vocab.txt)
 
