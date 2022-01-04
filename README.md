@@ -1,4 +1,4 @@
-# Intership of Camille LE (summer 2021): Assess syntactic ability of Transformer LM via counterfactual evaluation
+# Intership of C. LE (summer 2021): Assess syntactic ability of Transformer LM via counterfactual evaluation
 This repository contains data and code for a counterfactual evaluation of Transformer LM on French object past participle agreement
 
 ### Creating object past-participle agreement datasets
